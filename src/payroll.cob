@@ -1,0 +1,44 @@
+       IDENTIFICATION DIVISION.
+       PROGRAM-ID. CALCULATE-PAYROLL.
+
+       DATA DIVISION.
+       LINKAGE SECTION.
+       01  LK-EMPLOYEE-RECORD.
+           COPY "employee_record.cpy".
+       01  LK-PAYROLL-CALC.
+           COPY "payroll_calc.cpy".
+       01  LK-BRACKET-RATE              PIC 9V99.
+
+       PROCEDURE DIVISION USING LK-EMPLOYEE-RECORD LK-PAYROLL-CALC
+                                LK-BRACKET-RATE.
+       MAIN-PROCEDURE.
+           COMPUTE WS-GROSS-PAY OF LK-PAYROLL-CALC ROUNDED =
+               EMP-HOURLY-RATE OF LK-EMPLOYEE-RECORD *
+               EMP-HOURS-PERIOD OF LK-EMPLOYEE-RECORD
+
+           IF WS-GROSS-PAY OF LK-PAYROLL-CALC <= 500
+               MOVE 0.10 TO LK-BRACKET-RATE
+           ELSE
+               IF WS-GROSS-PAY OF LK-PAYROLL-CALC <= 1000
+                   MOVE 0.15 TO LK-BRACKET-RATE
+               ELSE
+                   MOVE 0.22 TO LK-BRACKET-RATE
+               END-IF
+           END-IF
+
+           COMPUTE WS-TAX-AMOUNT OF LK-PAYROLL-CALC ROUNDED =
+               WS-GROSS-PAY OF LK-PAYROLL-CALC * LK-BRACKET-RATE
+
+           COMPUTE WS-NET-PAY OF LK-PAYROLL-CALC ROUNDED =
+               WS-GROSS-PAY OF LK-PAYROLL-CALC -
+               WS-TAX-AMOUNT OF LK-PAYROLL-CALC
+
+           IF WS-GROSS-PAY OF LK-PAYROLL-CALC > 0
+               COMPUTE WS-EFFECTIVE-TAX-RATE OF LK-PAYROLL-CALC ROUNDED =
+                   (WS-TAX-AMOUNT OF LK-PAYROLL-CALC /
+                    WS-GROSS-PAY OF LK-PAYROLL-CALC) * 100
+           ELSE
+               MOVE 0 TO WS-EFFECTIVE-TAX-RATE OF LK-PAYROLL-CALC
+           END-IF
+
+           GOBACK.

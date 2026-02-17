@@ -1,0 +1,132 @@
+       IDENTIFICATION DIVISION.
+       PROGRAM-ID. RENDER-PAYROLL-CHART.
+
+       DATA DIVISION.
+       WORKING-STORAGE SECTION.
+       77  WS-MAX-VALUE                 PIC 9(7)V99 VALUE 0.
+       77  WS-GROSS-LEN                 PIC 99 VALUE 0.
+       77  WS-TAX-LEN                   PIC 99 VALUE 0.
+       77  WS-NET-LEN                   PIC 99 VALUE 0.
+
+       77  WS-TEMPLATE                  PIC X(40) VALUE ALL "#".
+       77  WS-GROSS-BAR                 PIC X(40) VALUE SPACES.
+       77  WS-TAX-BAR                   PIC X(40) VALUE SPACES.
+       77  WS-NET-BAR                   PIC X(40) VALUE SPACES.
+       77  WS-AMOUNT-DISPLAY            PIC ZZ,ZZZ,ZZ9.99.
+
+       77  ANSI-BASE                    PIC X(8) VALUE X"1B5B34303B39376D".
+       77  ANSI-KEYWORD                 PIC X(7) VALUE X"1B5B39363B316D".
+       77  ANSI-COMMENT                 PIC X(5) VALUE X"1B5B33326D".
+       77  ANSI-NUMBER                  PIC X(5) VALUE X"1B5B39356D".
+       77  ANSI-OPERATOR                PIC X(5) VALUE X"1B5B39346D".
+       77  WS-PAD-SPACES                PIC X(200) VALUE ALL " ".
+       77  WS-LEFT-PAD-USE              PIC 9(4) VALUE 0.
+
+       LINKAGE SECTION.
+       01  LK-PAYROLL-CALC.
+           COPY "payroll_calc.cpy".
+       01  LK-LEFT-PAD                  PIC 9(4).
+
+       PROCEDURE DIVISION USING LK-PAYROLL-CALC LK-LEFT-PAD.
+       MAIN-PROCEDURE.
+           MOVE LK-LEFT-PAD TO WS-LEFT-PAD-USE
+           IF WS-LEFT-PAD-USE > 200
+               MOVE 200 TO WS-LEFT-PAD-USE
+           END-IF
+           PERFORM CALCULATE-LENGTHS
+           PERFORM BUILD-BARS
+           PERFORM DISPLAY-CHART
+           GOBACK.
+
+       DISPLAY-LEFT-PADDING.
+           IF WS-LEFT-PAD-USE > 0
+               DISPLAY WS-PAD-SPACES(1:WS-LEFT-PAD-USE) WITH NO ADVANCING
+           END-IF.
+
+       CALCULATE-LENGTHS.
+           MOVE WS-GROSS-PAY OF LK-PAYROLL-CALC TO WS-MAX-VALUE
+
+           IF WS-TAX-AMOUNT OF LK-PAYROLL-CALC > WS-MAX-VALUE
+               MOVE WS-TAX-AMOUNT OF LK-PAYROLL-CALC TO WS-MAX-VALUE
+           END-IF
+
+           IF WS-NET-PAY OF LK-PAYROLL-CALC > WS-MAX-VALUE
+               MOVE WS-NET-PAY OF LK-PAYROLL-CALC TO WS-MAX-VALUE
+           END-IF
+
+           IF WS-MAX-VALUE = 0
+               MOVE 0 TO WS-GROSS-LEN WS-TAX-LEN WS-NET-LEN
+               EXIT PARAGRAPH
+           END-IF
+
+           COMPUTE WS-GROSS-LEN = FUNCTION INTEGER(
+               (WS-GROSS-PAY OF LK-PAYROLL-CALC / WS-MAX-VALUE) * 40)
+           COMPUTE WS-TAX-LEN = FUNCTION INTEGER(
+               (WS-TAX-AMOUNT OF LK-PAYROLL-CALC / WS-MAX-VALUE) * 40)
+           COMPUTE WS-NET-LEN = FUNCTION INTEGER(
+               (WS-NET-PAY OF LK-PAYROLL-CALC / WS-MAX-VALUE) * 40)
+
+           IF WS-GROSS-PAY OF LK-PAYROLL-CALC > 0 AND WS-GROSS-LEN = 0
+               MOVE 1 TO WS-GROSS-LEN
+           END-IF
+
+           IF WS-TAX-AMOUNT OF LK-PAYROLL-CALC > 0 AND WS-TAX-LEN = 0
+               MOVE 1 TO WS-TAX-LEN
+           END-IF
+
+           IF WS-NET-PAY OF LK-PAYROLL-CALC > 0 AND WS-NET-LEN = 0
+               MOVE 1 TO WS-NET-LEN
+           END-IF.
+
+       BUILD-BARS.
+           MOVE ALL " " TO WS-GROSS-BAR WS-TAX-BAR WS-NET-BAR
+
+           IF WS-GROSS-LEN > 0
+               MOVE WS-TEMPLATE(1:WS-GROSS-LEN)
+                 TO WS-GROSS-BAR(1:WS-GROSS-LEN)
+           END-IF
+
+           IF WS-TAX-LEN > 0
+               MOVE WS-TEMPLATE(1:WS-TAX-LEN)
+                 TO WS-TAX-BAR(1:WS-TAX-LEN)
+           END-IF
+
+           IF WS-NET-LEN > 0
+               MOVE WS-TEMPLATE(1:WS-NET-LEN)
+                 TO WS-NET-BAR(1:WS-NET-LEN)
+           END-IF.
+
+       DISPLAY-CHART.
+           PERFORM DISPLAY-LEFT-PADDING
+           DISPLAY ANSI-COMMENT WITH NO ADVANCING
+           DISPLAY "Scale: bars are normalized to the largest value in this view."
+
+           PERFORM DISPLAY-LEFT-PADDING
+           DISPLAY ANSI-OPERATOR WITH NO ADVANCING
+           DISPLAY "------------------------------------------------------------"
+
+           PERFORM DISPLAY-LEFT-PADDING
+           DISPLAY ANSI-KEYWORD WITH NO ADVANCING
+           DISPLAY "Gross" WITH NO ADVANCING
+           DISPLAY ANSI-NUMBER WITH NO ADVANCING
+           MOVE WS-GROSS-PAY OF LK-PAYROLL-CALC TO WS-AMOUNT-DISPLAY
+           DISPLAY " |" WS-GROSS-BAR "| $" WS-AMOUNT-DISPLAY
+
+           PERFORM DISPLAY-LEFT-PADDING
+           DISPLAY ANSI-KEYWORD WITH NO ADVANCING
+           DISPLAY "Tax  " WITH NO ADVANCING
+           DISPLAY ANSI-NUMBER WITH NO ADVANCING
+           MOVE WS-TAX-AMOUNT OF LK-PAYROLL-CALC TO WS-AMOUNT-DISPLAY
+           DISPLAY " |" WS-TAX-BAR "| $" WS-AMOUNT-DISPLAY
+
+           PERFORM DISPLAY-LEFT-PADDING
+           DISPLAY ANSI-KEYWORD WITH NO ADVANCING
+           DISPLAY "Net  " WITH NO ADVANCING
+           DISPLAY ANSI-NUMBER WITH NO ADVANCING
+           MOVE WS-NET-PAY OF LK-PAYROLL-CALC TO WS-AMOUNT-DISPLAY
+           DISPLAY " |" WS-NET-BAR "| $" WS-AMOUNT-DISPLAY
+
+           PERFORM DISPLAY-LEFT-PADDING
+           DISPLAY ANSI-OPERATOR WITH NO ADVANCING
+           DISPLAY "------------------------------------------------------------"
+           DISPLAY ANSI-BASE WITH NO ADVANCING.
