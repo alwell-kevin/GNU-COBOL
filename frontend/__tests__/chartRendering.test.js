@@ -32,4 +32,35 @@ describe('Payroll chart rendering parity', () => {
     const firstLine = chart.split('\n')[0];
     expect(firstLine.startsWith(' '.repeat(200))).toBe(true);
   });
+
+  test('fractional payroll values round to cents and keep bar normalization', () => {
+    const chart = renderPayrollChart({gross: 1234.567, tax: 12.345, net: 500.999});
+    const grossLine = chart.split('\n').find((line) => line.includes('Gross'));
+    const taxLine = chart.split('\n').find((line) => line.includes('Tax'));
+    const netLine = chart.split('\n').find((line) => line.includes('Net'));
+
+    expect(grossLine).toContain('$1,234.57'); // should round up at two decimals
+    expect(taxLine).toContain('$12.35');
+    expect(netLine).toContain('$501.00');
+
+    const lengths = calculateBarLengths({gross: 1234.567, tax: 12.345, net: 500.999});
+    expect(lengths.gross).toBeGreaterThan(lengths.net);
+    expect(lengths.tax).toBeLessThan(lengths.net);
+  });
+
+  test('negative payroll amounts render with zero-length bars while keeping the numeric signs', () => {
+    const chart = renderPayrollChart({gross: -500.5, tax: -200.25, net: -300.75});
+    const grossLine = chart.split('\n').find((line) => line.includes('Gross'));
+    const taxLine = chart.split('\n').find((line) => line.includes('Tax'));
+    const netLine = chart.split('\n').find((line) => line.includes('Net'));
+
+    expect(grossLine).toContain('-$500.50');
+    expect(taxLine).toContain('-$200.25');
+    expect(netLine).toContain('-$300.75');
+
+    const lengths = calculateBarLengths({gross: -500.5, tax: -200.25, net: -300.75});
+    expect(lengths.gross).toBe(0);
+    expect(lengths.tax).toBe(0);
+    expect(lengths.net).toBe(0);
+  });
 });
