@@ -1,0 +1,26 @@
+spring:
+  application:
+    name: cobol-demo-service
+
+cobol:
+  data:
+    employees: ../data/employees.dat
+    accounts: ../data/accounts.dat
+    ledger: ../data/ledger.dat
+    alerts: ../data/alerts.dat
+    encoding: UTF-8
+    scale: 2
+    rounding-mode: HALF_EVEN
+
+payview:
+  term:
+    cols: ${PAYVIEW_TERM_COLS:132}
+    rows: ${PAYVIEW_TERM_ROWS:42}
+  chart:
+    max-width: 40
+    normalize-to: gross
+
+logging:
+  level:
+    root: INFO
+    com.coboldemo: DEBUG
