@@ -9,8 +9,16 @@ cobol:
     ledger: ../data/ledger.dat
     alerts: ../data/alerts.dat
     encoding: UTF-8
-    scale: 2
-    rounding-mode: HALF_EVEN
+    scale: ${COBOL_NUMERIC_SCALE:2}
+    rounding-mode: ${COBOL_ROUNDING_MODE:HALF_EVEN}
+  persistence:
+    schema-file: classpath:schema.sql
+    default-ledger-sequence: 1
+    ledger-timestamp-format: yyyy-MM-dd HH:mm:ss
+  serialization:
+    currency: USD
+    precision: ${COBOL_SERIALIZATION_PRECISION:2}
+    rounding-mode: ${COBOL_SERIALIZATION_ROUNDING:HALF_EVEN}
 
 payview:
   term:
