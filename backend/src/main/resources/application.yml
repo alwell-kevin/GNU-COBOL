@@ -1,0 +1,34 @@
+spring:
+  application:
+    name: cobol-demo-service
+
+cobol:
+  data:
+    employees: ../data/employees.dat
+    accounts: ../data/accounts.dat
+    ledger: ../data/ledger.dat
+    alerts: ../data/alerts.dat
+    encoding: UTF-8
+    scale: ${COBOL_NUMERIC_SCALE:2}
+    rounding-mode: ${COBOL_ROUNDING_MODE:HALF_EVEN}
+  persistence:
+    schema-file: classpath:schema.sql
+    default-ledger-sequence: 1
+    ledger-timestamp-format: yyyy-MM-dd HH:mm:ss
+  serialization:
+    currency: USD
+    precision: ${COBOL_SERIALIZATION_PRECISION:2}
+    rounding-mode: ${COBOL_SERIALIZATION_ROUNDING:HALF_EVEN}
+
+payview:
+  term:
+    cols: ${PAYVIEW_TERM_COLS:132}
+    rows: ${PAYVIEW_TERM_ROWS:42}
+  chart:
+    max-width: 40
+    normalize-to: gross
+
+logging:
+  level:
+    root: INFO
+    com.coboldemo: DEBUG

@@ -1,0 +1,88 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-parent</artifactId>
+    <version>3.2.5</version>
+    <relativePath/>
+  </parent>
+
+  <groupId>com.cobol.demo</groupId>
+  <artifactId>cobol-demo-service</artifactId>
+  <version>0.1.0-SNAPSHOT</version>
+  <name>COBOL Demo Service</name>
+  <description>Spring Boot foundation for the COBOL to Java migration.</description>
+  <packaging>jar</packaging>
+
+  <properties>
+    <java.version>21</java.version>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <maven.compiler.source>${java.version}</maven.compiler.source>
+    <maven.compiler.target>${java.version}</maven.compiler.target>
+  </properties>
+
+  <dependencies>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-web</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-validation</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-configuration-processor</artifactId>
+      <optional>true</optional>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-csv</artifactId>
+      <version>1.10.0</version>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-maven-plugin</artifactId>
+        <configuration>
+          <mainClass>com.cobol.demo.CobolDemoApplication</mainClass>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <version>3.1.2</version>
+        <configuration>
+          <useModulePath>false</useModulePath>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+
+  <profiles>
+    <profile>
+      <id>dev</id>
+      <activation>
+        <activeByDefault>true</activeByDefault>
+      </activation>
+      <properties>
+        <spring.profiles.active>dev</spring.profiles.active>
+        <payview.term.cols>${env.PAYVIEW_TERM_COLS}</payview.term.cols>
+        <payview.term.rows>${env.PAYVIEW_TERM_ROWS}</payview.term.rows>
+      </properties>
+    </profile>
+    <profile>
+      <id>prod</id>
+      <properties>
+        <spring.profiles.active>prod</spring.profiles.active>
+        <payview.term.cols>${env.PAYVIEW_TERM_COLS}</payview.term.cols>
+        <payview.term.rows>${env.PAYVIEW_TERM_ROWS}</payview.term.rows>
+      </properties>
+    </profile>
+  </profiles>
+</project>
